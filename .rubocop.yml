@@ -4,5 +4,7 @@ Style/RedundantBegin:
   Enabled: false
 Style/Documentation:
   Enabled: false
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
 AllCops:
   NewCops: enable
