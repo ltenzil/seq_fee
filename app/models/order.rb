@@ -37,7 +37,7 @@ class Order < ApplicationRecord
     PAGE_LIMIT * opts[:page].to_i
   end
 
-  def self.to_disburse(opts, week_range)
+  def self.to_disburse(opts = {}, week_range = [])
     completed
       .where(merchant_query(opts))
       .where(completed_at: week_range)
