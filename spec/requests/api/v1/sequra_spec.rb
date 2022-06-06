@@ -10,7 +10,7 @@ RSpec.describe "Api::V1::Sequras", type: :request do
     it "returns http success" do
       get "/api/v1/sequra/orders"
       expect(response).to have_http_status(:success)
-      expect(JSON.parse(response.body).count).to eq(1)
+      expect(JSON.parse(response.body).keys).to eq(['count', 'data', 'page'])
     end
   end
 
@@ -31,7 +31,7 @@ RSpec.describe "Api::V1::Sequras", type: :request do
       total_fee    = Disburse::Fee.order_fee(order.amount)
       pay_merchant = Disburse::Fee.amount_after_fee(order.amount, total_fee)
 
-      get "/api/v1/sequra/disburse_report", params: {date: Date.today}
+      get "/api/v1/sequra/disburse_report", params: {date: Date.current}
       resp     = JSON.parse(response.body)
       reporder = resp['orders']&.first
 
@@ -40,6 +40,27 @@ RSpec.describe "Api::V1::Sequras", type: :request do
       expect(reporder['order_id']).not_to eq(iorder.id)
       expect(reporder['completed_at']).to be_truthy
       expect(reporder['pay_merchant']).to eq(pay_merchant)
+    end
+  end
+
+  describe "GET /disbursements" do
+    let!(:merchant) { create(:merchant) }
+    let!(:shopper) { create(:shopper) }
+    let!(:order) { create(:order, :complete, merchant: merchant, shopper: shopper) }
+    let!(:iorder) { create(:order, :incomplete, merchant: merchant, shopper: shopper) }
+    let!(:disbursement) { create(:disbursement, order: order, merchant: merchant) }
+
+    it "returns http success" do
+      get "/api/v1/sequra/disbursements"
+      expect(response).to have_http_status(:success)
+      expect(JSON.parse(response.body).keys).to eq(['count', 'data', 'page'])
+    end
+
+    it "should return disbursements" do
+      get "/api/v1/sequra/disbursements"
+      resp = JSON.parse(response.body)      
+      expect(resp['data'][0]['order_id']).to eq(order.id)
+      expect(resp['data'][0]['order_id']).not_to eq(iorder.id)
     end
   end
 

@@ -52,6 +52,8 @@ RSpec.describe Order, type: :model do
     let!(:order1) { create(:order, :complete, merchant: merchant, shopper: shopper) }
     let!(:order2) { create(:order, :complete, merchant: merchant1, shopper: shopper1, amount: 17.5) }
     let!(:order3) { create(:order, :incomplete, merchant: merchant1, shopper: shopper1, amount: 10.5) }
+    let!(:order4) { create(:order, :complete, merchant: merchant1, shopper: shopper1,
+                           amount: 17.5, completed_at: Date.current.end_of_month) }
 
     it "should include fields in search via options" do
       sql = Order.search({merchant_id: merchant.id}).to_sql
@@ -63,12 +65,12 @@ RSpec.describe Order, type: :model do
 
     it "should search and list all orders" do
       orders = Order.search()
-      expect(orders).to eq([order3, order2, order1]) # ordered by desc
+      expect(orders).to eq([order4, order3, order2, order1]) # ordered by desc
     end
 
     it "should search and list completed orders" do
       orders = Order.search({completed: true})
-      expect(orders).to eq([order2, order1])
+      expect(orders).to eq([order4, order2, order1])
     end
 
     it "should search by merchant and list orders" do
@@ -78,15 +80,33 @@ RSpec.describe Order, type: :model do
 
     it "should search by shopper and list orders" do
       orders = Order.search({shopper_id: shopper1.id})
-      expect(orders).to eq([order3, order2])
+      expect(orders).to eq([order4, order3, order2])
     end
 
     it "should return completed orders to disbursed for the week" do
-      date = Date.today
+      date = Date.current
       week_range = date.beginning_of_week..date.end_of_week
       orders = Order.to_disburse({date: date.to_s}, week_range)
       expect(orders.map(&:completed_at)).to eq([order1.completed_at, order2.completed_at])
       expect(week_range).to include(orders.first.completed_at.to_date)
+      expect(orders).not_to include(order4)
     end
+
+    it "should return orders to disbursed for the week - given start date " do
+      start_date = Date.current.to_s
+      orders = Order.search({start_date: start_date})
+      expect(orders.map(&:completed_at)).to eq([order2.completed_at, order1.completed_at])
+    end
+
+    it "should return orders to disbursed for given start & end date " do
+      start_date = Date.current.to_s
+      end_date = Date.current.end_of_month.to_s
+      orders = Order.search({start_date: start_date, end_date: end_date})
+      expect(orders.map(&:completed_at)).to eq([order4.completed_at, order2.completed_at, order1.completed_at])
+    end
+  end
+
+  describe "Query helpers" do
+    it_behaves_like 'queryable'
   end
 end

@@ -10,7 +10,7 @@ FactoryBot.define do
     end
 
     trait :complete do
-      completed_at { Time.now }
+      completed_at { Time.current }
     end
   end
 

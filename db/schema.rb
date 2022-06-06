@@ -10,10 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_06_03_053342) do
+ActiveRecord::Schema.define(version: 2022_06_06_044110) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "disbursements", force: :cascade do |t|
+    t.bigint "order_id", null: false
+    t.bigint "merchant_id", null: false
+    t.float "amount"
+    t.float "fee"
+    t.float "total_fee"
+    t.float "pay_merchant"
+    t.boolean "is_paid", default: false
+    t.datetime "completed_at"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["merchant_id"], name: "index_disbursements_on_merchant_id"
+    t.index ["order_id"], name: "index_disbursements_on_order_id"
+  end
 
   create_table "merchants", force: :cascade do |t|
     t.string "name"
@@ -42,6 +57,8 @@ ActiveRecord::Schema.define(version: 2022_06_03_053342) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  add_foreign_key "disbursements", "merchants"
+  add_foreign_key "disbursements", "orders"
   add_foreign_key "orders", "merchants"
   add_foreign_key "orders", "shoppers"
 end

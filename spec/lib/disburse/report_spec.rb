@@ -24,46 +24,43 @@ RSpec.describe Disburse::Report do
     let!(:order1) { create(:order, :complete, merchant: merchant, shopper: shopper) }
     let!(:order2) { create(:order, :complete, merchant: merchant1, shopper: shopper1, amount: 17.5) }
     let!(:order3) { create(:order, :incomplete, merchant: merchant1, shopper: shopper1, amount: 10.5) }
+    let!(:date_to_s) { Date.current.to_s }
 
     it "should return Report object" do
-      date   = Date.today.to_s
-      report = Disburse::Report.generate({ date: date })
+      report = Disburse::Report.generate({ date: date_to_s })
       expect(report).to be_an_instance_of(Disburse::Report)
     end
 
     it "should have OrderPresenter object" do
-      date   = Date.today.to_s
-      report = Disburse::Report.generate({ date: date })
+      report = Disburse::Report.generate({ date: date_to_s })
       expect(report.orders.first).to be_an_instance_of(Disburse::OrderPresenter)
     end
 
     it "should collect completed orders for report" do
-      date   = Date.today.to_s
-      report = Disburse::Report.generate({ date: date })
+      report = Disburse::Report.generate({ date: date_to_s })
       completed_orders = Order.completed.pluck(:completed_at)
       expect(report.orders.map(&:completed_at)).to eq(completed_orders)
       expect(report.count).to eq(report.orders.count)
     end
 
     it "should collect orders for merchant report" do
-      date   = Date.today.to_s
-      report = Disburse::Report.generate({ date: date, merchant_id: merchant1.id })
+      report = Disburse::Report.generate({ date: date_to_s, merchant_id: merchant1.id })
       expect(report.orders.map(&:merchant_id)).to eq([merchant1.id])
     end
 
     it "should return date range" do
-      date = Disburse::Report.date_range(Date.today.to_s)
-      expect(date).to be_a_kind_of(Range)
+      date_range = Order.date_range(date_to_s)
+      expect(date_range).to be_a_kind_of(Range)
     end
 
     it "should return last week range with no date" do
-      date = Disburse::Report.date_range()
-      expect(date.first).to eq(Date.today.last_week.beginning_of_week)
+      date_range = Order.date_range()
+      expect(date_range.first).to eq(Date.current.last_week.beginning_of_week)
     end
 
     it "should fetch order for date range" do
-      date = Disburse::Report.date_range(Date.today.to_s)
-      orders = Disburse::Report.fetch_orders({}, date)
+      date_range = Order.date_range(date_to_s)
+      orders = Disburse::Report.fetch_orders({}, date_range)
       expect(orders.count).to eq(2)
       expect(orders.first).to be_an_instance_of(Disburse::OrderPresenter)
     end

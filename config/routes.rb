@@ -3,6 +3,8 @@ Rails.application.routes.draw do
     namespace :v1 do
       get 'sequra/orders'
       get 'sequra/disburse_report'
+      get 'sequra/disbursements'
+      # Planned Improvements
       get 'sequra/merchants'
       get 'sequra/shoppers'
     end
