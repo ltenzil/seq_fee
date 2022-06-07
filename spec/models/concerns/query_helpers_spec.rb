@@ -39,14 +39,14 @@ shared_examples_for "queryable" do
 
   it "should return within range query for given start date" do
     date =  Date.current
-    range = date.beginning_of_week..date.end_of_week
+    range = date..date.end_of_week
     expect(model.completed_between({ start_date: date })).to eq({ completed_at: range })
   end
 
   it "should return within range query for given start, end date" do
     start_date = Date.current
     end_date = Date.current.end_of_month
-    range = start_date.beginning_of_week..end_date
+    range = start_date..end_date
     expect(model.completed_between({ start_date: start_date, end_date: end_date })).to eq({ completed_at: range })
   end
 

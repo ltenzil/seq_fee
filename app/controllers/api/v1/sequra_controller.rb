@@ -30,7 +30,7 @@ class Api::V1::SequraController < ApplicationController
   def handle_response(data, params)
     {
       count: data&.first&.hits.to_i,
-      data: data,
+      data: data.map { |record| record.attributes.except('hits') },
       page: params[:page].to_i
     }
   end
